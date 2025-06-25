@@ -80,8 +80,6 @@ class SignUpPage extends StatelessWidget {
                  MaterialPageRoute(builder: (context) => LoginPage()));
                     }
                   },
-                     backgroundColor: Colors.white,
-                      textColor: Colors.blue,
                   ),
                   CustomTextButton(
                     text: "Already have an account? Login",

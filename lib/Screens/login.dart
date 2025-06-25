@@ -50,8 +50,6 @@ class LoginPage extends StatelessWidget {
                    if (_formKey.currentState!.validate()) {
                    }
                    },
-                     backgroundColor: Colors.white, 
-                     textColor: Colors.blue,
                    ),
 
              CustomTextButton(
