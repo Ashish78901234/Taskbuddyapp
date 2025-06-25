@@ -1,64 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Screens/sing_up.dart';
+import 'package:flutter_application_1/Widget/Button.dart';
+import 'package:flutter_application_1/Widget/Text_field.dart';
 
 class LoginPage extends StatelessWidget {
-  final formKey = GlobalKey<FormState>();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
-      body: SingleChildScrollView(
-        child: Form(key: formKey,
-        child:Column(
-          children: [Padding(
-       padding: EdgeInsets.all(20),
-       child: Column(
-         mainAxisAlignment: MainAxisAlignment.center,
-         children: [
-          SizedBox(height: 10),
-           TextFormField(
-             controller: emailController,
-             decoration: InputDecoration(labelText: 'Enter Email',border: OutlineInputBorder()),
-             validator: (value) {
+      appBar: AppBar(title: const Text("Login")),
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              CustomTextField(
+                controller: emailController,
+                hintText: "Email",
+                keyboardType: TextInputType.emailAddress,
+               validator: (value) {
                if (value == null || value.isEmpty) {
                  return 'enter your email';
                }
                return null;
              },
-           ),
-           SizedBox(height: 10),
-           TextFormField(
-             controller: passwordController,
-             obscureText: true,
-             decoration: InputDecoration(labelText: 'Password',border: OutlineInputBorder()),
-             validator: (value) {
+                    ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                controller: passwordController,
+                hintText: "Password",
+                obscureText: true,
+                validator: (value) {
                if (value == null || value.length < 8) {
                  return 'password must be 8 characters';
                }
                return null;
              },
-           ),
-           SizedBox(height: 80),
-           ElevatedButton(
-             onPressed: () {
-               if(formKey.currentState!.validate()){
-                 print("login successful");
-               }
-             },
-             child: Text('Login'),
-             
-             style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity,48),shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero)),
-           ),
-           TextButton(
-             onPressed: () {
-               Navigator.pushNamed(context, '/signup');
-             },
-             child: Text("Don't have an account? Sign up"),
-           ),
-         ],
-       ),
-            )]) )));
+              ),
+              const SizedBox(height: 20),
+              CustomButton(
+                buttonText: "Login",
+                  onPressed: () {
+                   if (_formKey.currentState!.validate()) {
+                   }
+                   },
+                     backgroundColor: Colors.white, 
+                     textColor: Colors.blue,
+                   ),
+
+             CustomTextButton(
+              text: "Don't have an account? Sign Up",
+                onPressed: () {
+                Navigator.push(
+                context,
+                 MaterialPageRoute(builder: (context) => SignUpPage()),
+                   );
+                },
+             ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
