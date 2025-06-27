@@ -1,8 +1,15 @@
-allprojects {
+buildscript {
+    ext.kotlin_version = '1.7.10' // or whatever version you need
+
     repositories {
         google()
         mavenCentral()
     }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.google.gms:google-services :4.3.15"
+    }
 }
 
 val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()

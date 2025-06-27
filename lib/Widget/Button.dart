@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Utils/App_constant.dart';
-
+import 'package:flutter_application_1/Utils/Theme.dart';
 
 class CustomButton extends StatelessWidget {
   final String buttonText;
+  final String text;
   final VoidCallback onPressed;
   final Color? backgroundColor;
   final Color? textColor;
@@ -11,11 +11,12 @@ class CustomButton extends StatelessWidget {
 
   const CustomButton({
     super.key,
+    required this.text,
     required this.buttonText,
     required this.onPressed,
     this.backgroundColor,
     this.textColor,
-    this.borderRadius = 12.0,
+    this.borderRadius = 12.0, 
   });
 
   @override
@@ -29,7 +30,7 @@ class CustomButton extends StatelessWidget {
           backgroundColor: backgroundColor ?? AppColors.primary,
           foregroundColor: textColor ?? AppColors.buttonText,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
+            borderRadius: BorderRadius.zero,
           ),
           elevation: 4,
         ),

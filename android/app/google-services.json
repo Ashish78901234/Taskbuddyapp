@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "68741067855",
+    "project_id": "taskbuddy-ca032",
+    "storage_bucket": "taskbuddy-ca032.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:68741067855:android:8dc635aaf9fbcf9fa6263a",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfIx2L0mLzpaMicZiiTJ4FV7Du4dvc_HE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
