@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Screens/sing_up.dart';
-import 'package:flutter_application_1/Utils/Theme.dart';
+import 'package:flutter_application_1/Utils/App_constant.dart';
+import 'package:flutter_application_1/Utils/SnackBar.dart';
 import 'package:flutter_application_1/Widget/Button.dart';
 import 'package:flutter_application_1/Widget/Text_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,17 +27,12 @@ class _LoginScreenState extends State<LoginScreen> {
         password: password,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login Successful ✅",),backgroundColor: AppColors.success,
-        ),
-      );
+SnackbarHelper.showSuccess(context, AppConstants.loginSuccess);
 
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed: ${e.message}"),
-        backgroundColor: AppColors.error,
-        ),
-      );
+
+// ignore: unused_catch_clause
+} on FirebaseAuthException catch (e) {
+  SnackbarHelper.showError(context, AppConstants.loginFailed);
     }
   }
 
@@ -54,49 +50,54 @@ class _LoginScreenState extends State<LoginScreen> {
                   // FlutterLogo(size: 80),
                   SizedBox(height: 20),
                   Text(
-                    "TaskBuddy",
+                    AppConstants.title,
                     style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
 
                   // Email field with validation
                   CustomTextField(
-                    hintText: "Enter Email",
                     controller: emailController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                       return AppConstants.emptyEmailError;
                       } else if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w]{2,4}').hasMatch(value)) {
-                        return 'Enter a valid email';
+                       return AppConstants.invalidEmailError;
                       }
                       return null;
-                    }, obscureText: true,
+                    }, obscureText: true, hintText: AppConstants.EnterEmail,
                   ),
                   SizedBox(height: 10),
 
                   // Password field with validation
                   CustomTextField(
-                    hintText: "Enter Password",
                     controller: passwordController,
                     obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                       return AppConstants.emptyPasswordError;
                       } else if (value.length < 8) {
-                        return 'Password must be at least 8 characters';
+                       return AppConstants.shortPasswordError;
                       }
-                       else if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w]{2,4}').hasMatch(value)) {
-                        return 'Enter a valid email';
-                      }
+                      
                       return null;
-                    },
+                    }, hintText: AppConstants.EnterPassword,
                   ),
-
+                  Row(mainAxisAlignment: MainAxisAlignment.end,
+                  children:[ CustomTextButton(
+                    text: AppConstants.ForgotButton,
+                    onPressed: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(builder: (context) => SignupScreen()),
+                      // );
+                    },
+                  )]),
                   SizedBox(height: 20),
 
                   // Login Button
                   CustomButton(
-                    buttonText: "Login",
+                    buttonText: AppConstants.LoginButton,
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         loginUser();
@@ -106,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Sign Up Link
                   CustomTextButton(
-                    text: "Don't have an account? Sign Up",
+                    text: AppConstants.DonotButton,
                     onPressed: () {
                       Navigator.push(
                         context,

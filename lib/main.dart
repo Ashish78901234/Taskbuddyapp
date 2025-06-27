@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Screens/login.dart';
 import 'package:flutter_application_1/Screens/sing_up.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_application_1/Utils/App_constant.dart';
 //import 'package:flutter_application_1/Screens/login.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
    await Firebase.initializeApp(
   options: const FirebaseOptions(
-  apiKey: "AIzaSyAfIx2L0mLzpaMicZiiTJ4FV7Du4dvc_HE",
-  appId: "1:68741067855:android:8dc635aaf9fbcf9fa6263a",
-  messagingSenderId: "68741067855",
-  projectId: "taskbuddy-ca032",
-  storageBucket: "taskbuddy-ca032.firebasestorage.app",
+  apiKey: AppConstants.apiKey,
+  appId: AppConstants.appId,
+  messagingSenderId: AppConstants.messagingSenderId,
+  projectId: AppConstants.projectId,
+  storageBucket: AppConstants.storageBucket,
 ),
 
 );
@@ -24,7 +25,7 @@ class TaskBuddyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Login Page',
+      title: AppConstants.title,
       theme: ThemeData(
         primarySwatch: Colors.indigo,
         scaffoldBackgroundColor: Colors.white,

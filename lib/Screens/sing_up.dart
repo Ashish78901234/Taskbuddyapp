@@ -1,8 +1,10 @@
+// ignore_for_file: unused_catch_clause
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/Screens/login.dart';
-import 'package:flutter_application_1/Utils/Theme.dart';
-//import 'package:flutter_application_1/Utils/Theme.dart';
+import 'package:flutter_application_1/Utils/App_constant.dart';
+import 'package:flutter_application_1/Utils/SnackBar.dart';
 import 'package:flutter_application_1/Widget/Button.dart';
 import 'package:flutter_application_1/Widget/Text_field.dart';
 
@@ -28,7 +30,7 @@ bool isLoading = false;
   //  Password match check
   if (password != confirm) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Passwords do not match")),
+      const SnackBar(content: Text(AppConstants.donotmatchPasswordError)),
     );
     return;
   }
@@ -44,24 +46,14 @@ bool isLoading = false;
       email: email,
       password: password,
     );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Signup Successful ✅"),
-      backgroundColor: AppColors.success,
-      ),
-    );
+    
+SnackbarHelper.showSuccess(context, AppConstants.SignupSuccess);
 
     //  Login screen Back
     Navigator.pop(context);
   } on FirebaseAuthException catch (e) {
-
-    //  Error message show
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Signup failed: ${e.message}"),
-      backgroundColor: AppColors.error,
-      ),
-    );
-  } 
+  SnackbarHelper.showError(context, AppConstants.SignupFailed );
+    }
   finally {
     //  Hide loading
     setState(() {
@@ -73,7 +65,7 @@ bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Sign Up")),
+      appBar: AppBar(title: const Text(AppConstants.Signuptitle)),
       body: Form(key: _formKey,
         child: 
        Padding(
@@ -83,35 +75,37 @@ bool isLoading = false;
             children: [
               const SizedBox(height: 20),
              CustomTextField(
-                  hintText: "Enter Email",
+                  hintText: AppConstants.EnterEmail,
                   controller: emailController, 
-                 validator: (value){
-                        if(value == null || value.isEmpty){
-                          return "please enter your Email";
-                        }
-                        return null;
-                      }, obscureText: true,
-                ),
+
+validator: (value) {
+  if (value == null || value.isEmpty) {
+    return AppConstants.emptyEmailError;
+  }
+  return null;
+}, obscureText: true,
+
+             ),
               const SizedBox(height: 10),
               CustomTextField(
-                  hintText: "Enter Password",
+                  hintText: AppConstants.EnterPassword,
                controller: passwordController,
                isPassword: true,
                 validator: (value){
                         if(value == null || value.length<8){
-                          return "please enter your password";
+                          return AppConstants.emptyPasswordError;
                         }
                         return null;
                       }, obscureText: true,
                 ),
               const SizedBox(height: 10),
               CustomTextField(
-                  hintText: "Enter Confirm password",
+                  hintText: AppConstants.EnterConfirmPassword,
                   controller: confirmController,
                   isPassword: true,
                   validator: (value){
                         if(value == null || value.isEmpty){
-                          return "please enter your confirm password";
+                          return AppConstants.emptyconfirmPasswordError;
                         }
                         return null;
                       }, obscureText: true,
@@ -122,7 +116,7 @@ bool isLoading = false;
               CircularProgressIndicator():
                SizedBox(height: 20),
                CustomButton(
-  buttonText: "Sign Up",
+  buttonText: AppConstants.SignupButton,
   onPressed: () {
     if (_formKey.currentState!.validate()) {
       if (passwordController.text != confirmController.text) {
@@ -133,10 +127,10 @@ bool isLoading = false;
       }
       signUpUser();
     }
-  }, text: 'Sign up',
+  }, text: AppConstants.Signuptext,
 ),
 CustomTextButton(
-  text: "Already have an account? Login",
+  text: AppConstants.IHaveButton,
   onPressed: () {
     Navigator.push(
       context,

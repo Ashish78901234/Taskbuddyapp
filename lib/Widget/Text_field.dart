@@ -8,14 +8,14 @@ class CustomTextField extends StatelessWidget {
 
 
 
-  const CustomTextField({
-    Key? key,
-    required this.hintText,
+  const CustomTextField(
+     {
+    super.key,
     required this.controller,
     this.isPassword = false,
       required bool obscureText,
-       this.validator, 
-  }) : super(key: key);
+       this.validator, required this.hintText, 
+  });
 
   @override
   Widget build(BuildContext context) {

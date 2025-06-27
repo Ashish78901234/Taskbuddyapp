@@ -71,7 +71,6 @@ class CustomTextButton extends StatelessWidget {
         style: TextStyle(
           color: textColor ?? AppColors.link,
           fontSize: fontSize,
-          decoration: TextDecoration.underline,
         ),
       ),
     );
