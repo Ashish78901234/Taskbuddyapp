@@ -91,12 +91,16 @@ validator: (value) {
                   hintText: AppConstants.EnterPassword,
                controller: passwordController,
                isPassword: true,
-                validator: (value){
-                        if(value == null || value.length<8){
-                          return AppConstants.emptyPasswordError;
-                        }
-                        return null;
-                      }, obscureText: true,
+                validator: (value) {
+                      if (value == null || value.isEmpty) {
+                       return AppConstants.emptyPasswordError;
+                      } else if (value.length < 8) {
+                       return AppConstants.shortPasswordError;
+      }else if (!RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$').hasMatch(value)) {
+     return 'Password must be at least 8 characters,\ninclude uppercase, lowercase, number, and special character';
+  }
+                      return null;
+                    }, obscureText: true,
                 ),
               const SizedBox(height: 10),
               CustomTextField(
