@@ -5,6 +5,7 @@ class AppConstants {
   // General
   static const String appName = "TaskBuddy";
   static const String title = "Login Page";
+  static const String forgotpagetitletext = "Forgot Password";
   static const String Signuptitle = "Sign Up";
   static const String defaultFontFamily = "Roboto";
 
@@ -21,6 +22,7 @@ class AppConstants {
   static const String ForgotButton = "Forgot Password";
   static const String LoginButton = "Login";
   static const String SignupButton = "Sign Up";
+  static const String SendResetLink = "Send Reset Link";
   static const String IHaveButton = "Already have an account? Login";
   static const String DonotButton = "Don't have an account? Sign Up";
   
@@ -38,6 +40,8 @@ class AppConstants {
   static const String emptyEmailError = "Please enter your email";
   static const String invalidEmailError = "Enter a valid email";
   static const String emptyPasswordError = "Please enter your password";
+  static const String ResetpageEmail = "Email is required";
+  static const String Resetpagevalidemail = "Enter a valid email";
   static const String emptyconfirmPasswordError = "Please enter your confirm password";
   static const String donotmatchPasswordError = "Passwords do not match";
   static const String shortPasswordError = "Password must be at least 8 characters";
@@ -52,4 +56,9 @@ class AppConstants {
 
   //text
   static const String Signuptext = "Sign up";
+  static const String sendresetlinktext = "Sign up";
+  static const String Passwordresetlink = "Password reset link sent to email ✅";
+
+  //label text
+  static const String Resetpage = "Email";
 }

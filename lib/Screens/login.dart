@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Screens/Forgot_Password.dart';
+import 'package:flutter_application_1/Screens/Home.dart';
 import 'package:flutter_application_1/Screens/sing_up.dart';
 import 'package:flutter_application_1/Utils/App_constant.dart';
 import 'package:flutter_application_1/Utils/SnackBar.dart';
@@ -15,24 +18,39 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  
 
   void loginUser() async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-SnackbarHelper.showSuccess(context, AppConstants.loginSuccess);
+      final userDoc = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid);
 
+      DocumentSnapshot snapshot = await userDoc.get();
 
-// ignore: unused_catch_clause
-} on FirebaseAuthException catch (e) {
-  SnackbarHelper.showError(context, AppConstants.loginFailed);
+      if (!snapshot.exists) {
+        await userDoc.set({
+          'email': email,
+          'createdAt': FieldValue.serverTimestamp(),
+          'role': 'user',
+        });
+      }
+
+      SnackbarHelper.showSuccess(context, AppConstants.loginSuccess);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const TaskHomePage()),
+      );
+    } on FirebaseAuthException {
+      SnackbarHelper.showError(context, AppConstants.loginFailed);
     }
   }
 
@@ -44,75 +62,75 @@ SnackbarHelper.showSuccess(context, AppConstants.loginSuccess);
         child: Center(
           child: SingleChildScrollView(
             child: Form(
-              key: _formKey, // form key for validation
+              key: _formKey,
               child: Column(
                 children: [
-                  // FlutterLogo(size: 80),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Text(
                     AppConstants.title,
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 20),
-
-                  // Email field with validation
+                  const SizedBox(height: 20),
                   CustomTextField(
                     controller: emailController,
+                    obscureText: false,
+                    hintText: AppConstants.EnterEmail,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                       return AppConstants.emptyEmailError;
+                        return AppConstants.emptyEmailError;
                       } else if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w]{2,4}').hasMatch(value)) {
-                       return AppConstants.invalidEmailError;
+                        return AppConstants.invalidEmailError;
                       }
                       return null;
-                    }, obscureText: true, hintText: AppConstants.EnterEmail,
+                    },
                   ),
-                  SizedBox(height: 10),
-
-                  // Password field with validation
+                  const SizedBox(height: 10),
                   CustomTextField(
                     controller: passwordController,
                     obscureText: true,
+                    hintText: AppConstants.EnterPassword,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                       return AppConstants.emptyPasswordError;
+                        return AppConstants.emptyPasswordError;
                       } else if (value.length < 8) {
-                       return AppConstants.shortPasswordError;
-      }else if (!RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$').hasMatch(value)) {
-     return 'Password must be at least 8 characters,\ninclude uppercase, lowercase, number, and special character';
-  }
+                        return AppConstants.shortPasswordError;
+                      } else if (!RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$!#%*?&]{8,}$')
+                          .hasMatch(value)) {
+                        return 'Password must be at least 8 characters,\ninclude uppercase, lowercase, number, and special character';
+                      }
                       return null;
-                    }, hintText: AppConstants.EnterPassword,
-                  ),
-                  Row(mainAxisAlignment: MainAxisAlignment.end,
-                  children:[ CustomTextButton(
-                    text: AppConstants.ForgotButton,
-                    onPressed: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(builder: (context) => SignupScreen()),
-                      // );
                     },
-                  )]),
-                  SizedBox(height: 20),
-
-                  // Login Button
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      CustomTextButton(
+                        text: AppConstants.ForgotButton,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ResetPasswordScreen()),
+                          );
+                        },
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                   CustomButton(
                     buttonText: AppConstants.LoginButton,
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         loginUser();
                       }
-                    }, text: '',
+                    },
+                    text: '',
                   ),
-
-                  // Sign Up Link
                   CustomTextButton(
                     text: AppConstants.DonotButton,
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => SignupScreen()),
+                        MaterialPageRoute(builder: (context) => const SignupScreen()),
                       );
                     },
                   ),
