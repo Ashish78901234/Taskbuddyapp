@@ -1,34 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Utils/Theme.dart'; 
 
-class SnackbarHelper {
-  static void showSuccess(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.success,
-        behavior: SnackBarBehavior.floating,
+class CustomSnackBar {
+  static void show(
+    BuildContext context, {
+    required String message,
+    bool isError = false,
+  }) {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
       ),
+      backgroundColor: isError ? Colors.redAccent : Colors.green,
+      behavior: SnackBarBehavior.floating,
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      duration: Duration(seconds: 3),
     );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  static void showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+  static void showSuccess(BuildContext context, String loginSuccess) {}
 
-  static void showInfo(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-}
+  static void showError(BuildContext context, String loginFailed) {}}

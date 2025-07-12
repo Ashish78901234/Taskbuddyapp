@@ -1,58 +1,111 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'dart:io' as io;
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/Screens/login.dart';
 import 'package:flutter_application_1/Utils/App_constant.dart';
 import 'package:flutter_application_1/Utils/SnackBar.dart';
+import 'package:flutter_application_1/Utils/Theme.dart';
+import 'package:flutter_application_1/Utils/password_validation.dart';
 import 'package:flutter_application_1/Widget/Button.dart';
 import 'package:flutter_application_1/Widget/Text_field.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
-
   @override
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmController = TextEditingController();
+
+  io.File? _imageFile; // Mobile
+  Uint8List? _webImageBytes; // Web
 
   bool isLoading = false;
 
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 25,
+    );
+    if (picked != null) {
+      if (kIsWeb) {
+        final bytes = await picked.readAsBytes();
+        setState(() {
+          _webImageBytes = bytes;
+        });
+      } else {
+        setState(() {
+          _imageFile = io.File(picked.path);
+        });
+      }
+    }
+  }
+
   void signUpUser() async {
-    String email = emailController.text.trim();
-    String password = passwordController.text.trim();
-    String confirm = confirmController.text.trim();
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final confirm = confirmController.text.trim();
+
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirm.isEmpty ||
+        (!kIsWeb && _imageFile == null) ||
+        (kIsWeb && _webImageBytes == null)) {
+      CustomSnackBar.show(context,
+          message: AppConstants.fillAllFields, isError: true);
+      return;
+    }
 
     if (password != confirm) {
-      SnackbarHelper.showError(context, AppConstants.donotmatchPasswordError);
+      CustomSnackBar.show(context,
+          message: AppConstants.donotmatchPasswordError, isError: true);
+      return;
+    }
+
+    final passwordError = PasswordValidator.validate(password);
+    if (passwordError != null) {
+      CustomSnackBar.show(context, message: passwordError, isError: true);
       return;
     }
 
     setState(() => isLoading = true);
-
     try {
-      // 1. Create user in Firebase Auth
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
+      final userCred =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      // 2. Store user info in Firestore
+      // 🔄 Convert image to Base64
+      String base64Image = base64Encode(
+          kIsWeb ? _webImageBytes! : await _imageFile!.readAsBytes());
+      // ✅ Save to Firestore
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(userCredential.user!.uid)
+          .doc(userCred.user!.uid)
           .set({
+        'uid': userCred.user!.uid,
+        'name': name,
         'email': email,
-        'createdAt': FieldValue.serverTimestamp(),
-        'role': 'user',
+        'photo': base64Image,
       });
-
-      SnackbarHelper.showSuccess(context, AppConstants.SignupSuccess);
-      Navigator.pop(context); // Go back to login screen
+      CustomSnackBar.show(context, message: AppConstants.SignupSuccess);
+      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
-      SnackbarHelper.showError(context, AppConstants.SignupFailed);
+      CustomSnackBar.show(context,
+          message: "${AppConstants.SignupFailed} ${e.message}", isError: true);
     } finally {
       setState(() => isLoading = false);
     }
@@ -61,83 +114,67 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppConstants.Signuptitle)),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                CustomTextField(
-                  hintText: AppConstants.EnterEmail,
-                  controller: emailController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return AppConstants.emptyEmailError;
-                    }
-                    return null;
-                  },
-                  obscureText: false,
+      appBar: AppBar(
+        title: const Text(AppConstants.Signuptitle),
+        backgroundColor: AppColors.primary,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: pickImage,
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundImage: kIsWeb
+                      ? (_webImageBytes != null
+                          ? MemoryImage(_webImageBytes!)
+                          : null)
+                      : (_imageFile != null
+                          ? Image.file(_imageFile!).image
+                          : null),
+                  child: (kIsWeb && _webImageBytes == null) ||
+                          (!kIsWeb && _imageFile == null)
+                      ? const Icon(Icons.add_a_photo)
+                      : null,
                 ),
-                const SizedBox(height: 10),
-                CustomTextField(
+              ),
+              const SizedBox(height: 10),
+              CustomTextField(
+                  hintText: "Enter name", controller: nameController, obscureText: false,),
+              const SizedBox(height: 10),
+              CustomTextField(
+                  hintText: AppConstants.EnterEmail,obscureText: false, controller: emailController),
+              const SizedBox(height: 10),
+              CustomTextField(
                   hintText: AppConstants.EnterPassword,
                   controller: passwordController,
-                  isPassword: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return AppConstants.emptyPasswordError;
-                    } else if (value.length < 8) {
-                      return AppConstants.shortPasswordError;
-                    } else if (!RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
-                        .hasMatch(value)) {
-                      return 'Password must include uppercase,\nlowercase, number, and special character';
-                    }
-                    return null;
-                  },
-                  obscureText: true,
-                ),
-                const SizedBox(height: 10),
-                CustomTextField(
+                  obscureText: false,
+                  isPassword: true),
+              const SizedBox(height: 10),
+              CustomTextField(
                   hintText: AppConstants.EnterConfirmPassword,
                   controller: confirmController,
-                  isPassword: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return AppConstants.emptyconfirmPasswordError;
-                    }
-                    return null;
-                  },
-                  obscureText: true,
-                ),
-                const SizedBox(height: 20),
-                isLoading
-                    ? const CircularProgressIndicator()
-                    : CustomButton(
-                        buttonText: AppConstants.SignupButton,
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            signUpUser();
-                          }
-                        },
-                        text: AppConstants.Signuptext,
-                      ),
-                CustomTextButton(
-                  text: AppConstants.IHaveButton,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
+                  obscureText: false,
+                  isPassword: true),
+              const SizedBox(height: 20),
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : CustomButton(
+                      text: AppConstants.Signuptitle,
+                      onPressed: signUpUser, buttonText: 'Sign up',
+                    ),
+              const SizedBox(height: 10),
+              CustomTextButton(
+                text: AppConstants.IHaveButton,
+                onPressed: () {
+                  Navigator.pop(context,
+                      MaterialPageRoute(builder: (_) => LoginScreen()));
+                },
+              ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-}
+      ));
+  }}

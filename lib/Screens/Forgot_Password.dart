@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   static const String id = 'reset_password';
-  const ResetPasswordScreen({Key? key}) : super(key: key);
+  const ResetPasswordScreen({super.key});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -12,7 +12,7 @@ class ResetPasswordScreen extends StatefulWidget {
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _key = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  static final auth = FirebaseAuth.instance;
+ // static final auth = FirebaseAuth.instance;
 
   @override
   void dispose() {

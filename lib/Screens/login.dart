@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/Screens/Forgot_Password.dart';
 import 'package:flutter_application_1/Screens/Home.dart';
 import 'package:flutter_application_1/Screens/sing_up.dart';
@@ -7,9 +7,10 @@ import 'package:flutter_application_1/Utils/App_constant.dart';
 import 'package:flutter_application_1/Utils/SnackBar.dart';
 import 'package:flutter_application_1/Widget/Button.dart';
 import 'package:flutter_application_1/Widget/Text_field.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -24,33 +25,23 @@ class _LoginScreenState extends State<LoginScreen> {
     String password = passwordController.text.trim();
 
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      final userDoc = FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user!.uid);
-
-      DocumentSnapshot snapshot = await userDoc.get();
-
-      if (!snapshot.exists) {
-        await userDoc.set({
-          'email': email,
-          'createdAt': FieldValue.serverTimestamp(),
-          'role': 'user',
-        });
-      }
-
-      SnackbarHelper.showSuccess(context, AppConstants.loginSuccess);
+      CustomSnackBar.showSuccess(context, AppConstants.loginSuccess);
 
       Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const TaskHomePage()),
-      );
+  context,
+  MaterialPageRoute(
+    builder: (context) => HomeScreen(
+    ),
+  ),
+);
+
     } on FirebaseAuthException {
-      SnackbarHelper.showError(context, AppConstants.loginFailed);
+      CustomSnackBar.showError(context, AppConstants.loginFailed);
     }
   }
 
@@ -68,39 +59,48 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   Text(
                     AppConstants.title,
-                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 20),
+
+                  // Email field
                   CustomTextField(
                     controller: emailController,
-                    obscureText: false,
                     hintText: AppConstants.EnterEmail,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return AppConstants.emptyEmailError;
-                      } else if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w]{2,4}').hasMatch(value)) {
+                      } else if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w]{2,4}$').hasMatch(value)) {
                         return AppConstants.invalidEmailError;
                       }
                       return null;
                     },
+                    obscureText: false,
                   ),
                   const SizedBox(height: 10),
+
+                  // Password field
                   CustomTextField(
                     controller: passwordController,
-                    obscureText: true,
                     hintText: AppConstants.EnterPassword,
+                    obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return AppConstants.emptyPasswordError;
                       } else if (value.length < 8) {
                         return AppConstants.shortPasswordError;
-                      } else if (!RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$!#%*?&]{8,}$')
+                      } else if (!RegExp(
+                              r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$!#%*?&]{8,}$')
                           .hasMatch(value)) {
                         return 'Password must be at least 8 characters,\ninclude uppercase, lowercase, number, and special character';
                       }
                       return null;
                     },
                   ),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -112,10 +112,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             MaterialPageRoute(builder: (context) => ResetPasswordScreen()),
                           );
                         },
-                      )
+                      ),
                     ],
                   ),
+
                   const SizedBox(height: 20),
+
+                  // Login Button
                   CustomButton(
                     buttonText: AppConstants.LoginButton,
                     onPressed: () {
@@ -123,8 +126,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         loginUser();
                       }
                     },
-                    text: '',
+                    text: '', // You can remove this if `text` isn't used
                   ),
+
+                  // Navigate to Signup
                   CustomTextButton(
                     text: AppConstants.DonotButton,
                     onPressed: () {

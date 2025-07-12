@@ -37,7 +37,11 @@ class AppConstants {
   static const String SignupSuccess = "Sign up Successful ✅";
   static const String loginFailed = "Login failed: ";
   static const String SignupFailed = "Signup failed: ";
+  static const String EnterName = "Enter Name";
+  static const String EnterPhone = "Enter Phone";
   static const String emptyEmailError = "Please enter your email";
+  static const String emptyNameError = "Please enter your Name";
+  static const String emptyPhoneError = "Please enter your PHone";
   static const String invalidEmailError = "Enter a valid email";
   static const String emptyPasswordError = "Please enter your password";
   static const String ResetpageEmail = "Email is required";
@@ -61,4 +65,6 @@ class AppConstants {
 
   //label text
   static const String Resetpage = "Email";
+
+  static var fillAllFields;
 }

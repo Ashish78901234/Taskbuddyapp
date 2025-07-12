@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Utils/Date_Format.dart';
 
@@ -33,15 +35,68 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     }
   }
 
-  void _saveTask() {
-    if (_titleController.text.isEmpty || _selectedCategory.isEmpty) {
+  Future<void> _saveTask() async {
+    if (_titleController.text.isEmpty || _selectedCategory.isEmpty || _selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all required fields")),
       );
       return;
     }
-    // Save logic goes here
-    Navigator.pop(context);
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("User not logged in")),
+      );
+      return;
+    }
+
+    final taskData = {
+      'title': _titleController.text,
+      'description': _descriptionController.text,
+      'category': _selectedCategory,
+      'date': DateFormatter.format(_selectedDate!),
+      'priority': _selectedPriority,
+      'status': 'To-do',
+      'color': _getCategoryColor(_selectedCategory).value,
+      'createdAt': Timestamp.now(),
+    };
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('tasks')
+          .add(taskData);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Task saved successfully")),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
+    }
+  }
+
+  Color _getCategoryColor(String category) {
+    switch (category) {
+      case 'Work':
+        return Colors.blue;
+      case 'Education':
+        return Colors.purple;
+      case 'Shopping':
+        return Colors.orange;
+      case 'Personal':
+        return Colors.green;
+      case 'Home':
+        return Colors.teal;
+      case 'Custom':
+        return Colors.grey;
+      default:
+        return Colors.grey;
+    }
   }
 
   @override
@@ -156,4 +211,3 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 }
-

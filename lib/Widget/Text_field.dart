@@ -14,14 +14,13 @@ class CustomTextField extends StatelessWidget {
     required this.controller,
     this.isPassword = false,
       required bool obscureText,
-       this.validator, required this.hintText, 
+      this.validator, required this.hintText,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      obscureText: isPassword,
       decoration: InputDecoration(
         hintText: hintText,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(0)),
