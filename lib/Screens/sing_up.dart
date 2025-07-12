@@ -32,9 +32,9 @@ class _SignupScreenState extends State<SignupScreen> {
   bool isLoading = false;
 
   Future<void> pickImage() async {
-    final picker = ImagePicker();
+    final picker = ImagePicker();  // image picker
     final picked = await picker.pickImage(
-      source: ImageSource.gallery,
+      source: ImageSource.gallery,   //select image from gallery
       imageQuality: 25,
     );
     if (picked != null) {
@@ -50,7 +50,7 @@ class _SignupScreenState extends State<SignupScreen> {
       }
     }
   }
-
+       // create a functon signup
   void signUpUser() async {
     final name = nameController.text.trim();
     final email = emailController.text.trim();
@@ -63,11 +63,12 @@ class _SignupScreenState extends State<SignupScreen> {
         confirm.isEmpty ||
         (!kIsWeb && _imageFile == null) ||
         (kIsWeb && _webImageBytes == null)) {
+          // this is Snackbar for messages
       CustomSnackBar.show(context,
           message: AppConstants.fillAllFields, isError: true);
       return;
     }
-
+         // this is password validation message
     if (password != confirm) {
       CustomSnackBar.show(context,
           message: AppConstants.donotmatchPasswordError, isError: true);
@@ -82,16 +83,17 @@ class _SignupScreenState extends State<SignupScreen> {
 
     setState(() => isLoading = true);
     try {
+      // email authtion 
       final userCred =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // 🔄 Convert image to Base64
+      // Convert image to Base64
       String base64Image = base64Encode(
           kIsWeb ? _webImageBytes! : await _imageFile!.readAsBytes());
-      // ✅ Save to Firestore
+      // Save to Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCred.user!.uid)
@@ -101,9 +103,11 @@ class _SignupScreenState extends State<SignupScreen> {
         'email': email,
         'photo': base64Image,
       });
+      // Sign up success
       CustomSnackBar.show(context, message: AppConstants.SignupSuccess);
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
+      // sign up faild
       CustomSnackBar.show(context,
           message: "${AppConstants.SignupFailed} ${e.message}", isError: true);
     } finally {

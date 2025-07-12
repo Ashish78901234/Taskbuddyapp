@@ -1,11 +1,36 @@
 // ignore_for_file: unused_local_variable
 
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TaskDetailScreen extends StatelessWidget {
   final Map<String, dynamic> task;
 
   const TaskDetailScreen({super.key, required this.task});
+
+  void _deleteTask(BuildContext context) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null || task['id'] == null) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('tasks')
+          .doc(task['id'])
+          .delete();
+
+      Navigator.pop(context); // Go back after delete
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Task deleted successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete task: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +52,7 @@ class TaskDetailScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.delete_outline, color: Colors.redAccent),
-            onPressed: () {
-              // TODO: Implement delete logic
-            },
+            onPressed: () => _deleteTask(context),
           )
         ],
       ),
