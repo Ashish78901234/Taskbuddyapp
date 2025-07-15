@@ -95,7 +95,7 @@ class _SignupScreenState extends State<SignupScreen> {
           kIsWeb ? _webImageBytes! : await _imageFile!.readAsBytes());
       // Save to Firestore
       await FirebaseFirestore.instance
-          .collection('users')
+          .collection("users")
           .doc(userCred.user!.uid)
           .set({
         'uid': userCred.user!.uid,
