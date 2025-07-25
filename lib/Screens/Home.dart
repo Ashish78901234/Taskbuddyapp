@@ -77,13 +77,12 @@ class _HomeScreenState extends State<HomeScreen>
               backgroundColor: AppColors.primary.withOpacity(0.1),
               child: IconButton(
                 onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProfileScreen(),
-      ),
-    );
- //profile
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProfileScreen(),
+                    ),
+                  );
                 },
                 icon: Icon(Icons.person, color: AppColors.primary),
               ),
@@ -141,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen>
                   children: [
                     buildTaskList(todo, showCheckbox: true),
                     buildTaskList(inProgress, showProgress: true),
-                    buildTaskList(completed, showCheckbox: true),
+                    buildTaskList(completed, allowDelete: true),
                   ],
                 ),
               ),
@@ -165,18 +164,22 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget buildTaskList(List<Map<String, dynamic>> taskList, {
+  Widget buildTaskList(
+    List<Map<String, dynamic>> taskList, {
     bool showProgress = false,
     bool showCheckbox = false,
+    bool allowDelete = false,
   }) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: taskList.length,
       itemBuilder: (context, index) {
         final task = taskList[index];
+        final String title = task['title'];
         final String category = task['category'];
         final Color categoryColor = task['color'];
-        final String title = task['title'];
         final String date = task['date'];
         final double progressValue = task['progress'];
 
@@ -207,36 +210,24 @@ class _HomeScreenState extends State<HomeScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (showCheckbox)
                       Checkbox(
-                        value: task['status'] == 'Completed',
+                        value: task['status'] == 'In-Progress',
                         onChanged: (value) async {
-                          final uid = FirebaseAuth.instance.currentUser?.uid;
-                          if (uid == null) return;
-
-                          String newStatus;
-                          if (task['status'] == 'To-do') {
-                            newStatus = 'In-Progress';
-                          } else if (task['status'] == 'In-Progress') {
-                            newStatus = 'Completed';
-                          } else {
-                            return;
+                          if (value == true && uid != null) {
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(uid)
+                                .collection('tasks')
+                                .doc(task['id'])
+                                .update({
+                              'status': 'In-Progress',
+                              'progress': 0.1,
+                            });
                           }
-
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(uid)
-                              .collection('tasks')
-                              .doc(task['id'])
-                              .update({'status': newStatus});
                         },
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
                       ),
-                    const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         title,
@@ -246,7 +237,18 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ),
                     ),
-                    const Icon(Icons.circle, size: 10, color: Colors.red),
+                    if (allowDelete)
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () async {
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(uid)
+                              .collection('tasks')
+                              .doc(task['id'])
+                              .delete();
+                        },
+                      ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -276,22 +278,52 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 if (showProgress) ...[
                   const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: LinearProgressIndicator(
-                      value: progressValue.clamp(0.0, 1.0),
-                      minHeight: 6,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.purple),
-                    ),
+                  LinearProgressIndicator(
+                    value: progressValue.clamp(0.0, 1.0),
+                    backgroundColor: Colors.grey.shade300,
+                    valueColor: AlwaysStoppedAnimation(AppColors.primary),
                   ),
-                  const SizedBox(height: 6),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      '${(progressValue * 100).toStringAsFixed(0)}% Completed',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Slider(
+                          value: progressValue,
+                          min: 0.0,
+                          max: 1.0,
+                          divisions: 20,
+                          label: "${(progressValue * 100).toStringAsFixed(0)}%",
+                          onChanged: (value) {
+                            setState(() {
+                              taskList[index]['progress'] = value;
+                            });
+                          },
+                          onChangeEnd: (value) async {
+                            if (uid != null) {
+                              final newStatus =
+                                  value >= 1.0 ? 'Completed' : 'In-Progress';
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(uid)
+                                  .collection('tasks')
+                                  .doc(task['id'])
+                                  .update({
+                                'progress': value,
+                                'status': newStatus,
+                              });
+                              if (newStatus == 'Completed') {
+                                await Future.delayed(const Duration(milliseconds: 300));
+                                _tabController.animateTo(2);
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                      Text(
+                        "${(progressValue * 100).toStringAsFixed(0)}%",
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
                   ),
                 ]
               ],
